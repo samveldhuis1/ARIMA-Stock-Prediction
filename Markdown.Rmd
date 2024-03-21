@@ -1,0 +1,84 @@
+---
+title: "ARIMA for Stock Prediction"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-03-21"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+library(quantmod)
+library(tidyquant)
+library(tseries)
+library(timeSeries)
+library(forecast)
+library(xts)
+
+analyze_stock <- function(ticker) {
+  # get symbol from yahoo finance
+  getSymbols(ticker, from = "2020-01-01", to = "2023-10-25")
+  stock_data <- get(ticker)
+  
+  stock_Close <- stock_data[,4]
+  
+  plot(stock_Close)
+  
+  # graph the ACF (Q) and PACF (P) for custom arimas
+  par(mfrow = c(1, 2))
+  Acf(stock_Close, main = paste("ACF for", ticker, "Differenced Series"))
+  Pacf(stock_Close, main = paste("PACF for", ticker, "Differenced Series"))
+  
+  # ADF test for p-value
+  print(adf.test(stock_Close)) # p-value should be below 0.01
+  auto.arima(stock_Close, seasonal = FALSE)
+  
+  FitA = auto.arima(stock_Close, seasonal = FALSE)
+  tsdisplay(residuals(FitA), lag.max = 40,
+            main = paste("(3, 1, 4 Model Residuals for", ticker, ")"))
+  
+  FitB = arima(stock_Close, order = c(1, 2, 4))
+  tsdisplay(residuals(FitB), lag.max = 40, 
+            main = paste("(1, 2, 4 Model Residuals for", ticker, ")"))
+  
+  FitC = arima(stock_Close, order = c(5, 1, 4))
+  tsdisplay(residuals(FitC), lag.max = 40, 
+            main = paste("(5, 1, 4 Model Residuals for", ticker, ")")) 
+  
+  FitD = arima(stock_Close, order = c(1, 1, 1))
+  tsdisplay(residuals(FitD), lag.max = 40, 
+            main = paste("(1, 1, 1 Model Residuals for", ticker, ")")) 
+  
+  # plot forecasts
+  par(mfrow = c(2,2))
+  term <- 100
+  
+  fcast1 <- forecast(FitA, h = term)
+  plot(fcast1)
+  
+  fcast2 <- forecast(FitB, h = term)
+  plot(fcast2)
+  
+  fcast3 <- forecast(FitC, h = term)
+  plot(fcast3)
+  
+  fcast4 <- forecast(FitD, h = term)
+  plot(fcast4)
+  
+  # accuracy
+  print(accuracy(fcast1))
+  print(accuracy(fcast2))
+  print(accuracy(fcast3))
+  print(accuracy(fcast4))
+}
+
+# Example usage
+analyze_stock("NVDA")
+```
+
