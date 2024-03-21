@@ -1,8 +1,5 @@
 ### ARIMA for Stock Prediction
 This R script is designed to utilize ARIMA (AutoRegressive Integrated Moving Average) models for predicting stock price movements based on historical data. The script employs various R packages to handle data manipulation, visualization, and ARIMA modeling effectively. 
- 
-### Date  
-2024-03-21  
   
 ### Usage 
 The main function in this script, analyze_stock(), takes a stock ticker symbol as input and performs the following operations: 
